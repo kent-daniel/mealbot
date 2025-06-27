@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  mealbot:
+    build:
+      context: ./discord-bot
+      dockerfile: Dockerfile
+    container_name: mealbot
+    restart: unless-stopped
+    env_file:
+      - ./discord-bot/.env
+    environment:
+      - LOG_LEVEL=INFO
+      - LOG_FILE=/app/logs/bot.log
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    networks:
+      - mealbot-network
+    # depends_on:
+    #   - experience-api
+    healthcheck:
+      test: ["CMD", "python", "health_check.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Include your experience API service
+  # experience-api:
+  #   # Replace with your actual experience API image
+  #   image: mealbot-experience-api:latest
+  #   container_name: mealbot-experience-api
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - NODE_ENV=production
+  #   networks:
+  #     - mealbot-network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+networks:
+  mealbot-network:
+    driver: bridge
+
+volumes:
+  bot-logs:
+    driver: local
+  bot-data:
+    driver: local

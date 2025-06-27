@@ -1,0 +1,19 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+*.log
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables (CRUCIAL for sensitive data like bot tokens!)
+.env
+.env.*
+
+# macOS specific files
+.DS_Store
