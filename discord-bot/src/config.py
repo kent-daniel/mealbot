@@ -24,7 +24,6 @@ class Config:
     SUPPORTED_PLATFORMS = {
         'youtube': os.getenv('ENABLE_YOUTUBE', 'true').lower() == 'true',
         'instagram': os.getenv('ENABLE_INSTAGRAM', 'true').lower() == 'true',
-        'tiktok': os.getenv('ENABLE_TIKTOK', 'true').lower() == 'true',
     }
     
     # Channel Configuration (optional)

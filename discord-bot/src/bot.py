@@ -5,6 +5,7 @@ import logging
 from config import Config
 from url_processor import URLProcessor
 from utils.logger import setup_logger
+import aiohttp.web
 
 # Setup logging
 logger = setup_logger()
@@ -138,5 +139,19 @@ def main():
         import traceback
         traceback.print_exc()
 
+# for cloud run
+async def health_check_handler(request):
+    return aiohttp.web.Response(text="OK")
+
+async def start_web_server():
+    app = aiohttp.web.Application()
+    app.add_routes([aiohttp.web.get('/', health_check_handler)])
+    runner = aiohttp.web.AppRunner(app)
+    await runner.setup()
+    site = aiohttp.web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
+    logger.info("Web server started on port 8080")
+
 if __name__ == "__main__":
+    asyncio.run(start_web_server())
     main()
