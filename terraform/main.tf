@@ -6,7 +6,7 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "${var.tf_state_bucket}"
+    bucket = "terraform-state-mealbot777"
     prefix = "terraform/state"
   }
 }
@@ -23,11 +23,6 @@ resource "google_secret_manager_secret" "discord_token_secret" {
   }
 }
 
-resource "google_secret_manager_secret_version" "discord_token_version" {
-  secret = google_secret_manager_secret.discord_token_secret.id
-  secret_data = var.discord_token
-}
-
 resource "google_cloud_run_v2_service" "default" {
   name     = "mealbot-discord-bot"
   location = var.region
@@ -37,15 +32,15 @@ resource "google_cloud_run_v2_service" "default" {
     containers {
       image = "gcr.io/${var.project_id}/mealbot-discord-bot"
       env {
-        name  = "DISCORD_TOKEN"
-        value = google_secret_manager_secret_version.discord_token_version.secret_data
+        name  = "GOOGLE_CLOUD_PROJECT"
+        value = var.project_id
       }
     }
     scaling {
       min_instance_count = 1
       max_instance_count = 3
     }
-    
+    service_account = var.cloud_run_service_account
   }
   traffic {
     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"

@@ -1,14 +1,29 @@
 import os
 from dotenv import load_dotenv
+from google.cloud import secretmanager
 
 # Load environment variables from .env file
 load_dotenv()
+
+def access_secret_version(secret_id: str, version_id: str = "latest") -> str:
+    """Access the payload for the given secret version if one exists.
+       Args:
+            secret_id (str):  The secret to access.
+            version_id (str): The version of the secret to access; default is "latest".
+       Returns:
+            str: The secret's payload.
+    """
+
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{os.environ['GOOGLE_CLOUD_PROJECT']}/secrets/{secret_id}/versions/{version_id}"
+    response = client.access_secret_version(name=name)
+    return response.payload.data.decode('UTF-8')
 
 class Config:
     """Configuration settings for the Discord bot."""
     
     # Discord Bot Configuration
-    DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+    DISCORD_TOKEN = access_secret_version('discord-token')
     
     # Experience API Configuration
     API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')

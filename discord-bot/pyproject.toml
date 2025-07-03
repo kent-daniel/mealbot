@@ -11,6 +11,7 @@ dependencies = [
     "aiohttp>=3.8.0",
     "python-dotenv>=1.0.0",
     "asyncio-throttle>=1.0.2",
+    "google-cloud-secret-manager",
 ]
 
 [project.optional-dependencies]

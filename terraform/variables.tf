@@ -9,15 +9,10 @@ variable "region" {
   default = "us-central1"
 }
 
-variable "service_account_key_file" {
-  type = string
-  description = "Path to the service account key file"
-}
-
-variable "discord_token" {
-  type = string
-  description = "The Discord bot token"
-}
+# variable "service_account_key_file" {
+#   type = string
+#   description = "Path to the service account key file"
+# }
 
 variable "tf_state_bucket" {
   type = string

@@ -18,6 +18,4 @@ RUN uv venv && uv pip install --system -e .
 
 COPY . .
 
-# Run the bot
-USER botuser
 CMD ["python", "src/bot.py"]
