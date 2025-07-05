@@ -15,17 +15,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # - name: Google Cloud SDK setup
-      #   uses: google-github-actions/setup-gcloud@v1
-      #   with:
-      #     version: "latest"
-      #     service_account_key: ${{ secrets.GCP_SA_KEY }} # This is a GitHub secret
-      #     project_id: mealbot777
+      - name: Google Cloud Auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.ACTIONS_SA_EMAIL }}
 
-      - name: Build and Push Docker image
-        run: |-
-          IMAGE_NAME=gcr.io/mealbot777/mealbot-discord-bot
-          docker build -t $IMAGE_NAME discord-bot
-          docker push $IMAGE_NAME
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./discord-bot
+          push: true
+          tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/mealbot-discord-bot/mealbot-discord-bot:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
