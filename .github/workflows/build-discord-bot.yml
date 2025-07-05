@@ -1,0 +1,31 @@
+name: Build Discord Bot
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # - name: Google Cloud SDK setup
+      #   uses: google-github-actions/setup-gcloud@v1
+      #   with:
+      #     version: "latest"
+      #     service_account_key: ${{ secrets.GCP_SA_KEY }} # This is a GitHub secret
+      #     project_id: mealbot777
+
+      - name: Build and Push Docker image
+        run: |-
+          IMAGE_NAME=gcr.io/mealbot777/mealbot-discord-bot
+          docker build -t $IMAGE_NAME discord-bot
+          docker push $IMAGE_NAME

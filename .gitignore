@@ -20,4 +20,6 @@ env/
 
 .terraform
 *.tfstate
+*.tfplan
+*.tfvars
 /data

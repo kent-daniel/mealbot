@@ -6,7 +6,7 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "terraform-state-mealbot777"
+    bucket = var.tf_state_bucket
     prefix = "terraform/state"
   }
 }
@@ -19,7 +19,7 @@ provider "google" {
 resource "google_secret_manager_secret" "discord_token_secret" {
   secret_id = "discord-token"
   replication {
-    automatic = true
+    auto {}
   }
 }
 
