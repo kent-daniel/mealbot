@@ -20,8 +20,8 @@ jobs:
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.ACTIONS_SA_EMAIL }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.ACTIONS_SA_EMAIL }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -31,6 +31,6 @@ jobs:
         with:
           context: ./discord-bot
           push: true
-          tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/mealbot-discord-bot/mealbot-discord-bot:${{ github.sha }}
+          tags: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/mealbot-discord-bot/mealbot-discord-bot:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
