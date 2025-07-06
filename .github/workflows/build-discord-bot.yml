@@ -6,27 +6,12 @@ on:
   pull_request:
     branches: [main]
 
-# env:
-#   WIF_PROVIDER: ${{vars.WIF_PROVIDER}}
-#   GCP_REGION: ${{vars.GCP_REGION}}
-#   PROJECT_ID: ${{vars.PROJECT_ID}}
-#   ACTIONS_SA_EMAIL: ${{vars.ACTIONS_SA_EMAIL}}
-#   CLOUDRUN_SA_EMAIL: ${{vars.CLOUD_RUN_SA}}
-#   ARTIFACT_REGISTRY_PATH: gcr.io/${{ vars.PROJECT_ID }}
-#   TF_BUCKET: ${{vars.TF_BUCKET}}
-
 jobs:
   build-and-push-job:
     uses: ./.github/workflows/build-and-push.yml
-    environment: prod
     permissions:
       id-token: write
       contents: read
-    with:
-      project_id: ${{ vars.PROJECT_ID }}
-      wif_provider: ${{ vars.WIF_PROVIDER }}
-      actions_sa_email: ${{ vars.ACTIONS_SA_EMAIL }}
-      artifact_registry_path: gcr.io/${{ vars.PROJECT_ID }}
 
   terraform-ci-job:
     needs: build-and-push-job
@@ -36,10 +21,5 @@ jobs:
       contents: read
     with:
       image_uri: ${{ needs.build-and-push-job.outputs.image_uri }}
-      project_id: ${{ vars.PROJECT_ID }}
-      wif_provider: ${{ vars.WIF_PROVIDER }}
-      cloud_run_sa_email: ${{ vars.CLOUD_RUN_SA }}
-      actions_sa_email: ${{ vars.ACTIONS_SA_EMAIL }}
-      tf_bucket: ${{ vars.TF_BUCKET }}
       github_ref: ${{ github.ref }}
       github_event_name: ${{ github.event_name }}

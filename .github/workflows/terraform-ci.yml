@@ -6,25 +6,10 @@ on:
       image_uri:
         required: true
         type: string
-      project_id:
-        required: true
-        type: string
-      cloud_run_sa_email:
-        required: true
-        type: string
-      tf_bucket:
-        required: true
-        type: string
       github_ref:
         required: true
         type: string
       github_event_name:
-        required: true
-        type: string
-      wif_provider: # Added for Google Cloud Auth
-        required: true
-        type: string
-      actions_sa_email: # Added for Google Cloud Auth
         required: true
         type: string
 
@@ -41,8 +26,8 @@ jobs:
         id: "auth"
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ inputs.wif_provider }}
-          service_account: ${{ vars.actions_sa_email }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.ACTIONS_SA_EMAIL }}
           token_format: "access_token"
 
       - name: Set up Google Cloud SDK
@@ -54,7 +39,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.tf_api_token }}
 
       - name: Terraform Init
-        run: cd terraform && terraform init -backend-config bucket=${{ inputs.tf_bucket }}
+        run: cd terraform && terraform init -backend-config bucket=${{ vars.TF_BUCKET }}
 
       - name: Terraform Format
         run: cd terraform && terraform fmt -check
@@ -63,9 +48,9 @@ jobs:
         run: |
           cd terraform && terraform plan \
             -var cloud_run_image_uri="${{ inputs.image_uri }}" \
-            -var project_id=${{ inputs.project_id }} \
-            -var cloud_run_service_account=${{ inputs.cloud_run_sa_email }} \
-            -var tf_state_bucket=${{ inputs.tf_bucket }} \
+            -var project_id=${{ vars.PROJECT_ID }} \
+            -var cloud_run_service_account=${{ vars.CLOUD_RUN_SA }} \
+            -var tf_state_bucket=${{ vars.TF_BUCKET }} \
             -out "prod.tfplan"
 
       - name: Terraform Apply

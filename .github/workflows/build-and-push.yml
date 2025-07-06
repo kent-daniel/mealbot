@@ -6,23 +6,6 @@ on:
       image_uri:
         description: "URI of the built Docker image"
         value: ${{ jobs.build.outputs.image_uri }}
-    inputs:
-      project_id:
-        description: "GCP Project ID"
-        required: true
-        type: string
-      wif_provider:
-        description: "Workload Identity Federation Provider"
-        required: true
-        type: string
-      actions_sa_email:
-        description: "Service Account Email for GitHub Actions"
-        required: true
-        type: string
-      artifact_registry_path:
-        description: "Path to the Artifact Registry (e.g., gcr.io/project-id)"
-        required: true
-        type: string
 
 jobs:
   build:
@@ -59,12 +42,12 @@ jobs:
         with:
           context: ./discord-bot
           push: true
-          tags: "${{ inputs.artifact_registry_path }}/mealbot-discord-bot:${{ github.sha }}"
+          tags: "gcr.io/${{ vars.PROJECT_ID }}/mealbot-discord-bot:${{ github.sha }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Set image URI output
         id: image_push
         run: |
-          IMAGE_URI="${{ inputs.artifact_registry_path }}/mealbot-discord-bot:${{ github.sha }}"
+          IMAGE_URI="gcr.io/${{ vars.PROJECT_ID }}/mealbot-discord-bot:${{ github.sha }}"
           echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
