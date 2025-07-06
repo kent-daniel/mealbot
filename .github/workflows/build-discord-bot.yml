@@ -33,13 +33,13 @@ jobs:
           service_account: ${{ env.ACTIONS_SA_EMAIL }}
           token_format: "access_token"
 
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Verify WIF Permissions
         run: |
           gcloud auth list
           gcloud projects get-iam-policy ${{ env.PROJECT_ID }} --flatten="bindings[].members" --format="table(bindings.role,bindings.members)" --filter="bindings.members:${{ env.ACTIONS_SA_EMAIL }}"
-
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
