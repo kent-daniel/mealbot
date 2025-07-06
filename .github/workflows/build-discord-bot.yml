@@ -45,8 +45,8 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+          gcloud auth configure-docker gcr.io
 
       - name: Build and push Docker image
         run: |
-          docker buildx build --platform linux/amd64 -t ${{ env.ARTIFACT_REGISTRY_PATH }}/mealbot-discord-bot:${{github.sha}} ./discord-bot --push
+          docker buildx build --platform linux/amd64 -t gcr.io/mealbot777/mealbot-discord-bot:latest ./discord-bot --push
