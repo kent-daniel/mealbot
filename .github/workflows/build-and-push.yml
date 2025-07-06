@@ -28,9 +28,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: prod
-    permissions:
-      contents: "read"
-      id-token: "write"
 
     outputs:
       image_uri: ${{ steps.image_push.outputs.image_uri }}

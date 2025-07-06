@@ -18,6 +18,9 @@ on:
 jobs:
   build-and-push-job:
     uses: ./.github/workflows/build-and-push.yml
+    permissions:
+      id-token: write
+      contents: read
     with:
       project_id: ${{ vars.PROJECT_ID }}
       wif_provider: ${{ vars.WIF_PROVIDER }}
@@ -27,6 +30,9 @@ jobs:
   terraform-ci-job:
     needs: build-and-push-job
     uses: ./.github/workflows/terraform-ci.yml
+    permissions:
+      id-token: write
+      contents: read
     with:
       image_uri: ${{ needs.build-and-push-job.outputs.image_uri }}
       project_id: ${{ vars.PROJECT_ID }}
