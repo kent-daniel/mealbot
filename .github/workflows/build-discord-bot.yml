@@ -6,58 +6,33 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  WIF_PROVIDER: ${{vars.WIF_PROVIDER}}
-  GCP_REGION: ${{vars.GCP_REGION}}
-  PROJECT_ID: ${{vars.PROJECT_ID}}
-  ACTIONS_SA_EMAIL: ${{vars.ACTIONS_SA_EMAIL}}
-  CLOUDRUN_SA_EMAIL: ${{vars.CLOUD_RUN_SA}}
-  ARTIFACT_REGISTRY_PATH: gcr.io/${{ vars.PROJECT_ID }}
-  TF_BUCKET: ${{vars.TF_BUCKET}}
+# env:
+#   WIF_PROVIDER: ${{vars.WIF_PROVIDER}}
+#   GCP_REGION: ${{vars.GCP_REGION}}
+#   PROJECT_ID: ${{vars.PROJECT_ID}}
+#   ACTIONS_SA_EMAIL: ${{vars.ACTIONS_SA_EMAIL}}
+#   CLOUDRUN_SA_EMAIL: ${{vars.CLOUD_RUN_SA}}
+#   ARTIFACT_REGISTRY_PATH: gcr.io/${{ vars.PROJECT_ID }}
+#   TF_BUCKET: ${{vars.TF_BUCKET}}
 
 jobs:
   build-and-push-job:
-    runs-on: ubuntu-latest
-    environment: prod
-    permissions:
-      contents: "read"
-      id-token: "write"
-
-    outputs:
-      image_uri: ${{ steps.build_push.outputs.image_uri }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Call Build and Push Workflow
-        id: build_push
-        uses: ./.github/workflows/build-and-push.yml
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-          wif_provider: ${{ env.WIF_PROVIDER }}
-          actions_sa_email: ${{ env.ACTIONS_SA_EMAIL }}
-          artifact_registry_path: ${{ env.ARTIFACT_REGISTRY_PATH }}
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      project_id: ${{ vars.PROJECT_ID }}
+      wif_provider: ${{ vars.WIF_PROVIDER }}
+      actions_sa_email: ${{ vars.ACTIONS_SA_EMAIL }}
+      artifact_registry_path: gcr.io/${{ vars.PROJECT_ID }}
 
   terraform-ci-job:
-    runs-on: ubuntu-latest
-    environment: prod
     needs: build-and-push-job
-    permissions:
-      contents: "read"
-      id-token: "write"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Call Terraform CI Workflow
-        uses: ./.github/workflows/terraform-ci.yml
-        with:
-          image_uri: ${{ needs.build-and-push-job.outputs.image_uri }}
-          project_id: ${{ env.PROJECT_ID }}
-          cloud_run_sa_email: ${{ env.CLOUDRUN_SA_EMAIL }}
-          tf_bucket: ${{ env.TF_BUCKET }}
-          tf_api_token: ${{ secrets.TF_API_TOKEN }}
-          github_ref: ${{ github.ref }}
-          github_event_name: ${{ github.event_name }}
+    uses: ./.github/workflows/terraform-ci.yml
+    with:
+      image_uri: ${{ needs.build-and-push-job.outputs.image_uri }}
+      project_id: ${{ vars.PROJECT_ID }}
+      wif_provider: ${{ vars.WIF_PROVIDER }}
+      cloud_run_sa_email: ${{ vars.CLOUD_RUN_SA }}
+      actions_sa_email: ${{ vars.ACTIONS_SA_EMAIL }}
+      tf_bucket: ${{ vars.TF_BUCKET }}
+      github_ref: ${{ github.ref }}
+      github_event_name: ${{ github.event_name }}
