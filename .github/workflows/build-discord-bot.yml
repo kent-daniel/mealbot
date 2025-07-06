@@ -11,7 +11,7 @@ env:
   GCP_REGION: ${{vars.GCP_REGION}}
   PROJECT_ID: ${{vars.PROJECT_ID}}
   ACTIONS_SA_EMAIL: ${{vars.ACTIONS_SA_EMAIL}}
-  ARTIFACT_REGISTRY_PATH: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/mealbot-discord-bot
+  ARTIFACT_REGISTRY_PATH: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/gcr.io
 
 jobs:
   build:
@@ -47,6 +47,6 @@ jobs:
         with:
           context: ./discord-bot
           push: true
-          tags: "${{ env.ARTIFACT_REGISTRY_PATH }}:${{ github.sha }}"
+          tags: "${{ env.ARTIFACT_REGISTRY_PATH }}/mealbot-discord-bot:${{ github.sha }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
