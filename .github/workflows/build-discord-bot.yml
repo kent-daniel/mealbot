@@ -27,6 +27,9 @@ jobs:
       image_uri: ${{ steps.build_push.outputs.image_uri }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Call Build and Push Workflow
         id: build_push
         uses: ./.github/workflows/build-and-push.yml
@@ -45,6 +48,9 @@ jobs:
       id-token: "write"
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Call Terraform CI Workflow
         uses: ./.github/workflows/terraform-ci.yml
         with:
