@@ -18,14 +18,15 @@ on:
 jobs:
   build-and-push-job:
     uses: ./.github/workflows/build-and-push.yml
+    environment: prod
     permissions:
       id-token: write
       contents: read
     with:
       project_id: ${{ vars.PROJECT_ID }}
       wif_provider: ${{ vars.WIF_PROVIDER }}
-      actions_sa_email: ${{ vars.prod.ACTIONS_SA_EMAIL }}
-      artifact_registry_path: gcr.io/${{ vars.prod.PROJECT_ID }}
+      actions_sa_email: ${{ vars.ACTIONS_SA_EMAIL }}
+      artifact_registry_path: gcr.io/${{ vars.PROJECT_ID }}
 
   terraform-ci-job:
     needs: build-and-push-job
