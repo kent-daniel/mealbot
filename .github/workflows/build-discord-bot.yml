@@ -1,4 +1,4 @@
-name: 🐳 Build Image and Push to Artifact Registry
+name: 🐳 Build And Deploy Discord Bot 🤖
 
 on:
   push:
@@ -16,74 +16,42 @@ env:
   TF_BUCKET: ${{vars.TF_BUCKET}}
 
 jobs:
-  build:
+  build-and-push-job:
     runs-on: ubuntu-latest
     environment: prod
     permissions:
       contents: "read"
       id-token: "write"
 
+    outputs:
+      image_uri: ${{ steps.build_push.outputs.image_uri }}
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Google Cloud Auth
-        id: "auth"
-        uses: google-github-actions/auth@v2
+      - name: Call Build and Push Workflow
+        id: build_push
+        uses: ./.github/workflows/build-and-push.yml
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.ACTIONS_SA_EMAIL }}
-          token_format: "access_token"
+          project_id: ${{ env.PROJECT_ID }}
+          wif_provider: ${{ env.WIF_PROVIDER }}
+          actions_sa_email: ${{ env.ACTIONS_SA_EMAIL }}
+          artifact_registry_path: ${{ env.ARTIFACT_REGISTRY_PATH }}
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+  terraform-ci-job:
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: build-and-push-job
+    permissions:
+      contents: "read"
+      id-token: "write"
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Configure Docker for Artifact Registry
-        run: |
-          gcloud auth configure-docker gcr.io
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+    steps:
+      - name: Call Terraform CI Workflow
+        uses: ./.github/workflows/terraform-ci.yml
         with:
-          context: ./discord-bot
-          push: true
-          tags: "${{ env.ARTIFACT_REGISTRY_PATH }}/mealbot-discord-bot:${{ github.sha }}"
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Set image URI output
-        id: image_push # This step now handles setting the output
-        run: |
-          IMAGE_URI="${{ env.ARTIFACT_REGISTRY_PATH }}/mealbot-discord-bot:${{ github.sha }}"
-          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Terraform Init
-        run: cd terraform && terraform init -backend-config bucket=${{ env.TF_BUCKET }}
-
-      # Checks that all Terraform configuration files adhere to a canonical format
-      - name: Terraform Format
-        run: cd terraform && terraform fmt -check
-
-      # Generates an execution plan for Terraform
-      - name: Terraform Plan
-        run: |
-          cd terraform && terraform plan \
-            -var cloud_run_image_uri="${{ steps.image_push.outputs.image_uri }}" \
-            -var project_id=${{env.PROJECT_ID}} \
-            -var cloud_run_service_account=${{env.CLOUDRUN_SA_EMAIL}} \
-            -var tf_state_bucket=${{env.TF_BUCKET}} \
-            -out "prod.tfplan"
-
-        # On push to "main", build or change infrastructure according to Terraform configuration files
-        # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: cd terraform && terraform apply "prod.tfplan"
+          image_uri: ${{ needs.build-and-push-job.outputs.image_uri }}
+          project_id: ${{ env.PROJECT_ID }}
+          cloud_run_sa_email: ${{ env.CLOUDRUN_SA_EMAIL }}
+          tf_bucket: ${{ env.TF_BUCKET }}
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
+          github_ref: ${{ github.ref }}
+          github_event_name: ${{ github.event_name }}

@@ -1,0 +1,72 @@
+name: 🐳 Build and Push Docker Image
+
+on:
+  workflow_call:
+    outputs:
+      image_uri:
+        description: "URI of the built Docker image"
+        value: ${{ jobs.build.outputs.image_uri }}
+    inputs:
+      project_id:
+        description: "GCP Project ID"
+        required: true
+        type: string
+      wif_provider:
+        description: "Workload Identity Federation Provider"
+        required: true
+        type: string
+      actions_sa_email:
+        description: "Service Account Email for GitHub Actions"
+        required: true
+        type: string
+      artifact_registry_path:
+        description: "Path to the Artifact Registry (e.g., gcr.io/project-id)"
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    outputs:
+      image_uri: ${{ steps.image_push.outputs.image_uri }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Cloud Auth
+        id: "auth"
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ inputs.wif_provider }}
+          service_account: ${{ inputs.actions_sa_email }}
+          token_format: "access_token"
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker gcr.io
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./discord-bot
+          push: true
+          tags: "${{ inputs.artifact_registry_path }}/mealbot-discord-bot:${{ github.sha }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Set image URI output
+        id: image_push
+        run: |
+          IMAGE_URI="${{ inputs.artifact_registry_path }}/mealbot-discord-bot:${{ github.sha }}"
+          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
