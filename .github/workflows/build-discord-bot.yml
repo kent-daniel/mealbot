@@ -12,6 +12,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    with:
+      project_name: "mealbot-discord-bot"
+      repo_name: "gcr.io"
 
   terraform-ci-job:
     needs: build-and-push-job
