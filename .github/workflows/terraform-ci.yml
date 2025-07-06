@@ -1,5 +1,4 @@
 name: Terraform CI/CD
-
 on:
   workflow_call:
     inputs:
@@ -12,6 +11,10 @@ on:
       github_event_name:
         required: true
         type: string
+
+concurrency:
+  group: terraform-global-lock
+  cancel-in-progress: true # Cancel concurrent plan & apply
 
 jobs:
   terraform:
