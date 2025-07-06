@@ -9,11 +9,6 @@ variable "region" {
   default = "us-central1"
 }
 
-# variable "service_account_key_file" {
-#   type = string
-#   description = "Path to the service account key file"
-# }
-
 variable "tf_state_bucket" {
   type = string
   description = "The name of the GCS bucket to store Terraform state"
@@ -24,4 +19,7 @@ variable "cloud_run_service_account" {
   description = "The email address of the Cloud Run service account"
 }
 
-# Add more variables as needed
+variable "cloud_run_image_uri" {
+  type = string
+  description = "container image uri for cloud run service"
+}
