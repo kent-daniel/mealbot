@@ -49,7 +49,7 @@ resource "google_cloud_run_v2_service" "default" {
 }
 
 resource "google_secret_manager_secret_iam_member" "secret_access" {
-  secret_id   = google_secret_manager_secret.discord_token_secret.id
-  role     = "roles/secretmanager.secretAccessor"
-  member = "serviceAccount:${var.cloud_run_service_account}"
+  secret_id = google_secret_manager_secret.discord_token_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.cloud_run_service_account}"
 }
