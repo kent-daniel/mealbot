@@ -43,7 +43,7 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+          gcloud auth configure-docker gcr.io
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
