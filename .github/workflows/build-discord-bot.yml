@@ -47,6 +47,6 @@ jobs:
         with:
           context: ./discord-bot
           push: true
-          tags: ${{ env.ARTIFACT_REGISTRY_PATH }}/mealbot-discord-bot:${{ github.sha }}
+          tags: "${{ env.ARTIFACT_REGISTRY_PATH }}:${{ github.sha }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
