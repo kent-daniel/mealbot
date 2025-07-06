@@ -11,6 +11,7 @@ env:
   GCP_REGION: ${{vars.GCP_REGION}}
   PROJECT_ID: ${{vars.PROJECT_ID}}
   ACTIONS_SA_EMAIL: ${{vars.ACTIONS_SA_EMAIL}}
+  ARTIFACT_REGISTRY_PATH: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/mealbot-discord-bot
 
 jobs:
   build:
@@ -25,22 +26,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Google Cloud Auth
+        id: "auth"
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.ACTIONS_SA_EMAIL }}
 
-      - name: Print all environment variables
-        run: env
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ARTIFACT_REGISTRY_PATH }}
+          username: _json_key
+          password: ${{ steps.auth.outputs.access_token }} # Use the short-lived access token from the auth step
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./discord-bot
           push: true
-          tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/mealbot-discord-bot/mealbot-discord-bot:${{ github.sha }}
+          tags: ${{ env.ARTIFACT_REGISTRY_PATH }}/mealbot-discord-bot:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
