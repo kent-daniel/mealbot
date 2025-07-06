@@ -102,12 +102,6 @@ class ExperienceAPIClient:
             raise
     
     async def health_check(self) -> bool:
-        """
-        Check if the API is healthy and responding.
-        
-        Returns:
-            True if API is healthy, False otherwise
-        """
         try:
             session = await self._get_session()
             health_url = f"{self.base_url.rstrip('/')}/health"
