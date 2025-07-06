@@ -40,8 +40,8 @@ jobs:
         id: "auth"
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ inputs.wif_provider }}
-          service_account: ${{ inputs.actions_sa_email }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.ACTIONS_SA_EMAIL }}
           token_format: "access_token"
 
       - name: Set up Google Cloud SDK
