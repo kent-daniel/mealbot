@@ -54,7 +54,7 @@ class ExperienceAPIClient:
             full_url = Config.get_full_api_url()
             logger.info(f"Sending request to: {full_url}")
             
-            async with session.post(full_url, json=payload, headers=headers) as response:
+            async with session.post(f'{full_url}/', json=payload, headers=headers) as response:
                 # Log response status
                 logger.info(f"API response status: {response.status}")
                 

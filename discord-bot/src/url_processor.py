@@ -43,6 +43,10 @@ class URLProcessor:
             
             logger.info(f"Processing URL: {url}")
             
+            if await self.api_client.health_check():
+                await message.channel.send("exa healthy")
+            else:
+                await message.channel.send("❌ exa unhealthy")
             # recipe_data = await self.api_client.process_video(url)
             
             # if recipe_data:
