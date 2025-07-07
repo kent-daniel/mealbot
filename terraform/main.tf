@@ -30,7 +30,7 @@ resource "google_cloud_run_v2_service" "default" {
 
   template {
     containers {
-      image = "gcr.io/${var.project_id}/mealbot-discord-bot"
+      image = var.cloud_run_image_uri
       env {
         name  = "GOOGLE_CLOUD_PROJECT"
         value = var.project_id
