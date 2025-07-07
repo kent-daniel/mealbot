@@ -12,7 +12,7 @@ on:
     outputs:
       image_uri:
         description: "URI of the built Docker image"
-        value: ${{ jobs.build.outputs.image_uri }}
+        value: ${{ jobs.build-and-push.outputs.image_uri }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{inputs.project_name}}
