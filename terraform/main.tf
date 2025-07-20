@@ -78,10 +78,10 @@ resource "google_cloud_run_v2_service" "mealbot_api_service" {
         value = var.project_id
       }
       resources {
-          limits = {
-            memory = "1Gi"
-            cpu    = "2"
-          }
+        limits = {
+          memory = "1Gi"
+          cpu    = "2"
+        }
       }
     }
     scaling {

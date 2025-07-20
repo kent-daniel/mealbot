@@ -24,15 +24,6 @@ class ExperienceAPIClient:
         return self.session
     
     async def process_video(self, video_url: str) -> Optional[Dict[Any, Any]]:
-        """
-        Send video URL to experience API for processing.
-        
-        Args:
-            video_url: The video URL to process
-            
-        Returns:
-            Dictionary containing recipe data or None if failed
-        """
         try:
             session = await self._get_session()
             
