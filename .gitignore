@@ -22,5 +22,5 @@ env/
 *.tfstate
 *.tfplan
 *.tfvars
-/data
+data
 *keys.json

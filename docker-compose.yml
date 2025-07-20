@@ -16,16 +16,18 @@ services:
     networks:
       - mealbot-network
     depends_on:
-      - experience-api
+      - api
 
-  experience-api:
+  api:
     build:
-      context: ./experience-api
+      context: ./api
       dockerfile: Dockerfile
-    container_name: mealbot-experience-api
+    container_name: mealbot-api
     restart: unless-stopped
     ports:
       - "8001:8001"
+    volumes:
+      - ./api/data:/app/data # Mount a local 'data' directory to the container's /app/data
     environment:
       - NODE_ENV=production
     networks:
