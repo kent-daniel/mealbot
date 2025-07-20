@@ -2,7 +2,10 @@ name: Terraform CI/CD
 on:
   workflow_call:
     inputs:
-      image_uri:
+      api_image_uri:
+        required: true
+        type: string
+      discord_bot_image_uri:
         required: true
         type: string
       github_ref:
@@ -50,7 +53,8 @@ jobs:
       - name: Terraform Plan
         run: |
           cd terraform && terraform plan \
-            -var cloud_run_image_uri="${{ inputs.image_uri }}" \
+            -var cloud_run_discord_image_uri="${{ inputs.discord_bot_image_uri }}" \
+            -var cloud_run_api_image_uri="${{ inputs.api_image_uri }}" \
             -var project_id=${{ vars.PROJECT_ID }} \
             -var cloud_run_service_account=${{ vars.CLOUD_RUN_SA }} \
             -var tf_state_bucket=${{ vars.TF_BUCKET }} \

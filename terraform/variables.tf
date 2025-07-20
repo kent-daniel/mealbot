@@ -19,7 +19,12 @@ variable "cloud_run_service_account" {
   description = "The email address of the Cloud Run service account"
 }
 
-variable "cloud_run_image_uri" {
+variable "cloud_run_discord_image_uri" {
   type        = string
-  description = "container image uri for cloud run service"
+  description = "container image uri for discord bot cloud run service"
+}
+
+variable "cloud_run_api_image_uri" {
+  type        = string
+  description = "container image uri for api cloud run service"
 }

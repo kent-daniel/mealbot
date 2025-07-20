@@ -1,0 +1,40 @@
+name: CI job
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-push-discord-bot:
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      project_name: "mealbot-discord-bot"
+      path_name: "./discord-bot"
+      repo_name: "gcr.io"
+    permissions:
+      id-token: write
+      contents: read
+
+  build-and-push-api:
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      project_name: "mealbot-api"
+      path_name: "./api"
+      repo_name: "gcr.io"
+    permissions:
+      id-token: write
+      contents: read
+
+  terraform-ci-job:
+    needs: [build-and-push-discord-bot, build-and-push-api]
+    uses: ./.github/workflows/terraform-ci.yml
+    with:
+      discord_bot_image_uri: ${{ needs.build-and-push-discord-bot.outputs.image_uri }}
+      api_image_uri: ${{ needs.build-and-push-api.outputs.image_uri }}
+      github_ref: ${{ github.ref }}
+      github_event_name: ${{ github.event_name }}
+    permissions:
+      id-token: write
+      contents: read

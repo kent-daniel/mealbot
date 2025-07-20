@@ -6,6 +6,9 @@ on:
       project_name:
         required: true
         type: string
+      path_name:
+        required: true
+        type: string
       repo_name:
         required: true
         type: string
@@ -51,7 +54,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./discord-bot
+          context: ${{inputs.path_name}}
           push: true
           tags: "${{inputs.repo_name}}/${{ vars.PROJECT_ID }}/${{inputs.project_name}}:${{ github.sha }}"
           cache-from: type=gha
