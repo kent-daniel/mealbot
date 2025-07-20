@@ -36,7 +36,7 @@ resource "google_cloud_run_v2_service" "mealbot_discord_bot_service" {
         value = var.project_id
       }
       env {
-        name = "API_BASE_URL"
+        name  = "API_BASE_URL"
         value = google_cloud_run_v2_service.mealbot_api_service.uri
       }
     }
