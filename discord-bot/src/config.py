@@ -27,7 +27,7 @@ class Config:
     
     # Experience API Configuration
     API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
-    API_ENDPOINT = os.getenv('API_ENDPOINT', '/api/process-url')
+    API_ENDPOINT = os.getenv('API_ENDPOINT', '/process-url')
     API_TIMEOUT = int(os.getenv('API_TIMEOUT', '30'))  # Timeout in seconds
     
     # Bot Behavior Configuration

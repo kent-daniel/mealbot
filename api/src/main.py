@@ -20,7 +20,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(lifespan=lifespan)
 
 class URLItem(BaseModel):
-    url: str
+    video_url: str
+    source: str
 
 @app.post("/process-url")
 async def process_url_endpoint(item: URLItem):
