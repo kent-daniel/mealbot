@@ -13,7 +13,6 @@ class ExperienceAPIClient:
     def __init__(self):
         self.base_url = Config.API_BASE_URL
         self.endpoint = Config.API_ENDPOINT
-        self.api_key = Config.API_KEY
         self.timeout = Config.API_TIMEOUT
         self.session = None
     

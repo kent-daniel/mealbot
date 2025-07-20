@@ -21,4 +21,4 @@ RUN uv venv && uv pip install --system -e .
 
 COPY . .
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]

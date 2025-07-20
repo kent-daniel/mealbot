@@ -77,6 +77,12 @@ resource "google_cloud_run_v2_service" "mealbot_api_service" {
         name  = "GOOGLE_CLOUD_PROJECT"
         value = var.project_id
       }
+      resources {
+          limits = {
+            memory = "1Gi"
+            cpu    = "2"
+          }
+      }
     }
     scaling {
       min_instance_count = 0
