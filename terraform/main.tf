@@ -52,6 +52,13 @@ resource "google_cloud_run_v2_service" "mealbot_discord_bot_service" {
   }
 }
 
+resource "google_cloud_run_service_iam_member" "api_invoker_permission" {
+  service  = google_cloud_run_v2_service.mealbot_api_service.name
+  location = google_cloud_run_v2_service.mealbot_api_service.location
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${var.cloud_run_service_account}"
+}
+
 resource "google_secret_manager_secret_iam_member" "secret_access" {
   secret_id = google_secret_manager_secret.discord_token_secret.id
   role      = "roles/secretmanager.secretAccessor"
