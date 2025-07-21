@@ -14,11 +14,6 @@ variable "tf_state_bucket" {
   description = "The name of the GCS bucket to store Terraform state"
 }
 
-variable "cloud_run_service_account" {
-  type        = string
-  description = "The email address of the Cloud Run service account"
-}
-
 variable "cloud_run_discord_image_uri" {
   type        = string
   description = "container image uri for discord bot cloud run service"
