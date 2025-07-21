@@ -12,8 +12,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "asyncio-throttle>=1.0.2",
     "google-cloud-secret-manager",
-    "google-auth",
-    "google-auth-oauthlib",
+    "google-auth"
 ]
 
 [project.optional-dependencies]

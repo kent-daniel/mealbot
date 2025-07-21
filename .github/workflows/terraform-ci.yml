@@ -56,7 +56,6 @@ jobs:
             -var cloud_run_discord_image_uri="${{ inputs.discord_bot_image_uri }}" \
             -var cloud_run_api_image_uri="${{ inputs.api_image_uri }}" \
             -var project_id=${{ vars.PROJECT_ID }} \
-            -var cloud_run_service_account=${{ vars.CLOUD_RUN_SA }} \
             -var tf_state_bucket=${{ vars.TF_BUCKET }} \
             -out "prod.tfplan"
 

@@ -23,6 +23,12 @@ resource "google_secret_manager_secret" "discord_token_secret" {
   }
 }
 
+resource "google_service_account" "discord_cloudrun_account" {
+  account_id   = "cloud-run-discord-sa"
+  description  = "Identity used by the discord service to call private Cloud Run services."
+  display_name = "cloud-run-discord-sa"
+}
+
 resource "google_cloud_run_v2_service" "mealbot_discord_bot_service" {
   name     = "mealbot-discord-bot"
   location = var.region
@@ -44,7 +50,7 @@ resource "google_cloud_run_v2_service" "mealbot_discord_bot_service" {
       min_instance_count = 1
       max_instance_count = 3
     }
-    service_account = var.cloud_run_service_account
+    service_account = google_service_account.discord_cloudrun_account.email
   }
   traffic {
     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
@@ -52,17 +58,28 @@ resource "google_cloud_run_v2_service" "mealbot_discord_bot_service" {
   }
 }
 
-resource "google_cloud_run_service_iam_member" "api_invoker_permission" {
-  service  = google_cloud_run_v2_service.mealbot_api_service.name
-  location = google_cloud_run_v2_service.mealbot_api_service.location
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${var.cloud_run_service_account}"
+data "google_iam_policy" "discord_public_iam" {
+  binding {
+    role = "roles/run.invoker"
+    members = [
+      "allUsers",
+    ]
+  }
 }
+
+resource "google_cloud_run_service_iam_policy" "discord_public_iam" {
+  location = google_cloud_run_v2_service.mealbot_discord_bot_service.location
+  project  = google_cloud_run_v2_service.mealbot_discord_bot_service.project
+  service  = google_cloud_run_v2_service.mealbot_discord_bot_service.name
+
+  policy_data = data.google_iam_policy.discord_public_iam.policy_data
+}
+
 
 resource "google_secret_manager_secret_iam_member" "secret_access" {
   secret_id = google_secret_manager_secret.discord_token_secret.id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${var.cloud_run_service_account}"
+  member    = "serviceAccount:${google_service_account.discord_cloudrun_account.email}"
 }
 
 resource "google_cloud_run_v2_service" "mealbot_api_service" {
@@ -88,10 +105,16 @@ resource "google_cloud_run_v2_service" "mealbot_api_service" {
       min_instance_count = 0
       max_instance_count = 3
     }
-    service_account = var.cloud_run_service_account
   }
   traffic {
     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
   }
+}
+
+resource "google_cloud_run_service_iam_member" "api_invoker_permission" {
+  service  = google_cloud_run_v2_service.mealbot_api_service.name
+  location = google_cloud_run_v2_service.mealbot_api_service.location
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.discord_cloudrun_account.email}"
 }

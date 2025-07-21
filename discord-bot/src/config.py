@@ -6,13 +6,6 @@ from google.cloud import secretmanager
 load_dotenv()
 
 def access_secret_version(secret_id: str, version_id: str = "latest") -> str:
-    """Access the payload for the given secret version if one exists.
-       Args:
-            secret_id (str):  The secret to access.
-            version_id (str): The version of the secret to access; default is "latest".
-       Returns:
-            str: The secret's payload.
-    """
 
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/{os.environ['GOOGLE_CLOUD_PROJECT']}/secrets/{secret_id}/versions/{version_id}"
