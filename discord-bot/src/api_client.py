@@ -5,6 +5,8 @@ import os # Added for os.environ.get, though the function using it was removed
 from typing import Optional, Dict, Any
 import google.auth.transport.requests
 import google.oauth2.id_token
+from utils.logger import setup_logger
+from config import Config
 
 logger = setup_logger()
 
@@ -13,7 +15,7 @@ class ExperienceAPIClient:
 
     def __init__(self):
         # Config should provide the full URL of the Cloud Run service, including 'https://'
-        self.api_full_url = Config.API_FULL_URL
+        self.api_full_url = Config.API_BASE_URL
         self.timeout = Config.API_TIMEOUT
         self._session: Optional[aiohttp.ClientSession] = None # Initialize aiohttp session
         self._id_token: Optional[str] = None # To store the fetched ID token
