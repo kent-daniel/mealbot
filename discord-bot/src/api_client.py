@@ -5,8 +5,8 @@ import os # Added for os.environ.get, though the function using it was removed
 from typing import Optional, Dict, Any
 import google.auth.transport.requests
 import google.oauth2.id_token
-from utils.logger import setup_logger
-from config import Config
+from .utils.logger import setup_logger
+from .config import Config
 
 logger = setup_logger()
 
@@ -50,95 +50,80 @@ class ExperienceAPIClient:
             self._session = aiohttp.ClientSession(headers=headers, timeout=aiohttp.ClientTimeout(total=self.timeout))
         return self._session
 
-    async def process_video(self, video_url: str) -> Optional[Dict[Any, Any]]:
+    async def _make_request(self, method: str, endpoint: str, payload: Optional[Dict[Any, Any]] = None, retry_count: int = 0) -> Optional[Dict[Any, Any]]:
         """
-        Sends a video URL to the Experience API for processing.
+        Internal helper to make authenticated API requests with retry logic.
         """
         try:
-            # Get an authenticated aiohttp session
             session = await self._get_authenticated_session()
+            full_endpoint_url = f'{self.api_full_url.rstrip("/")}{endpoint}'
+            logger.info(f"Sending {method} request to: {full_endpoint_url}")
 
-            payload = {
-                "video_url": video_url,
-                "source": "discord_bot"
-            }
-
-            # Construct the full URL for the API endpoint
-            # rstrip('/') ensures no double slashes if API_FULL_URL ends with one
-            full_endpoint_url = f'{self.api_full_url.rstrip("/")}{Config.API_ENDPOINT}'
-            logger.info(f"Sending request to: {full_endpoint_url} with video_url: {video_url}")
-
-            # Make the POST request
-            async with session.post(
-                full_endpoint_url,
-                json=payload # aiohttp handles setting Content-Type: application/json when 'json' argument is used
-            ) as response:
-                # Log response status for debugging
+            async with session.request(method, full_endpoint_url, json=payload) as response:
                 logger.info(f"API response status: {response.status}")
 
                 if response.status == 200:
-                    data = await response.json()
-                    logger.info("Successfully received recipe data from API")
-                    return data
-
+                    return await response.json()
+                elif response.status == 401 and retry_count == 0:
+                    logger.warning("API token potentially expired (401). Attempting to refresh token and retry.")
+                    await self.close() # Force session and token refresh
+                    return await self._make_request(method, endpoint, payload, retry_count=1) # Retry once
                 elif response.status == 400:
                     error_data = await response.text()
                     logger.warning(f"Bad request to API (400): {error_data}")
                     raise Exception(f"Invalid video URL or unsupported platform: {error_data}")
-
                 elif response.status == 404:
                     logger.warning("API endpoint not found (404). Check API_FULL_URL and API_ENDPOINT.")
                     raise Exception("API service unavailable or endpoint not found.")
-
                 elif response.status == 429:
                     logger.warning("API rate limit exceeded (429).")
                     raise Exception("Too many requests. Please try again later.")
-
                 elif response.status >= 500:
                     error_text = await response.text()
                     logger.error(f"API server error ({response.status}): {error_text}")
                     raise Exception(f"API server error. Please try again later. Details: {error_text}")
-
                 else:
                     error_text = await response.text()
                     logger.error(f"Unexpected API response {response.status}: {error_text}")
                     raise Exception(f"Unexpected API response: {response.status} - {error_text}")
 
-        except aiohttp.ClientTimeout:
-            logger.error("API request timed out.")
-            raise Exception("Request timed out. The video might be too long to process or the API is slow.")
-
         except aiohttp.ClientError as e:
-            logger.error(f"Network error during API request: {e}", exc_info=True)
-            raise Exception(f"Network error. Please check your connection. Details: {e}")
-
+            if isinstance(e, aiohttp.ClientTimeout):
+                logger.error("API request timed out.")
+                raise Exception("Request timed out. The video might be too long to process or the API is slow.")
+            elif retry_count == 0:
+                logger.warning(f"Network error during API request: {e}. Attempting to recreate session and retry.", exc_info=True)
+                await self.close() # Force session recreation
+                return await self._make_request(method, endpoint, payload, retry_count=1) # Retry once
+            else:
+                logger.error(f"Persistent network error during API request: {e}", exc_info=True)
+                raise Exception(f"Network error. Please check your connection. Details: {e}")
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response from API: {e}", exc_info=True)
             raise Exception("Invalid response from API: Expected JSON but received malformed data.")
-
         except Exception as e:
-            # Catch any other unexpected exceptions and log them with traceback
             logger.error(f"An unexpected error occurred in API client: {e}", exc_info=True)
-            raise Exception(f"An unexpected error occurred during video processing: {e}")
+            raise Exception(f"An unexpected error occurred during API call: {e}")
+
+    async def process_video(self, video_url: str) -> Optional[Dict[Any, Any]]:
+        """
+        Sends a video URL to the Experience API for processing.
+        """
+        payload = {
+            "video_url": video_url,
+            "source": "discord_bot"
+        }
+        return await self._make_request("POST", Config.API_ENDPOINT, payload)
 
     async def health_check(self) -> bool:
         """
         Performs a health check on the Experience API.
         """
         try:
-            session = await self._get_authenticated_session()
-            # Construct the health check URL using the base API URL
-            health_url = f"{self.api_full_url.rstrip('/')}/health"
-            logger.info(f"Performing health check on: {health_url}")
-
-            async with session.get(health_url) as response:
-                status_ok = response.status == 200
-                if not status_ok:
-                    logger.warning(f"Health check failed with status: {response.status}")
-                else:
-                    logger.info("Health check successful (status 200).")
-                return status_ok
-
+            # The health check endpoint is typically just '/' or '/health' relative to the base URL
+            # We'll use '/' as per the API's health check handler in main.py
+            response_data = await self._make_request("GET", "/health")
+            return response_data is not None # If request succeeds, it's healthy
         except Exception as e:
             logger.error(f"Health check failed due to exception: {e}", exc_info=True)
             return False
