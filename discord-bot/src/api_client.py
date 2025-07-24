@@ -1,12 +1,10 @@
 import aiohttp
-import asyncio
 import json
-import os # Added for os.environ.get, though the function using it was removed
 from typing import Optional, Dict, Any
 import google.auth.transport.requests
 import google.oauth2.id_token
-from .utils.logger import setup_logger
-from .config import Config
+from utils.logger import setup_logger
+from config import Config
 
 logger = setup_logger()
 
