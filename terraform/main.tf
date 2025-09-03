@@ -47,7 +47,7 @@ resource "google_cloud_run_v2_service" "mealbot_discord_bot_service" {
       }
     }
     scaling {
-      min_instance_count = 1
+      min_instance_count = 0
       max_instance_count = 3
     }
     service_account = google_service_account.discord_cloudrun_account.email
@@ -97,7 +97,7 @@ resource "google_cloud_run_v2_service" "mealbot_api_service" {
       resources {
         limits = {
           memory = "1Gi"
-          cpu    = "2"
+          cpu    = "1"
         }
       }
     }
