@@ -6,16 +6,16 @@ from faster_whisper import WhisperModel # Import WhisperModel from faster_whispe
 
 from .video_pipeline import process_video_url, download_audio, transcribe_audio, save_transcript_to_json # Import individual functions
 
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # Load the Whisper model on startup
-    print("Loading Faster Whisper model...")
-    # Use "tiny" model, device "cpu", and compute_type "int8" for efficiency
-    app.state.whisper_model = WhisperModel("tiny", device="cpu", compute_type="int8")
-    print("Faster Whisper model loaded.")
-    yield
-    # Clean up on shutdown (if any)
-    print("Application shutdown.")
+# @asynccontextmanager
+# async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+#     # Load the Whisper model on startup
+#     print("Loading Faster Whisper model...")
+#     # Use "tiny" model, device "cpu", and compute_type "int8" for efficiency
+#     app.state.whisper_model = WhisperModel("tiny", device="cpu", compute_type="int8")
+#     print("Faster Whisper model loaded.")
+#     yield
+#     # Clean up on shutdown (if any)
+#     print("Application shutdown.")
 
 app = FastAPI(lifespan=lifespan)
 
